@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🎬 เลือกหนังที่อยากดูด้วยกัน 💕</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0a0a0f;--card:#16161f;--accent:#e50914;--accent2:#ff6b81;
+  --text:#e5e5e5;--text2:#8a8a9a;--glass:rgba(22,22,31,0.85);
+  --glow:0 0 30px rgba(229,9,20,0.3);
+}
+body{
+  font-family:'Kanit',sans-serif;background:var(--bg);color:var(--text);
+  min-height:100vh;overflow-x:hidden;
+}
+/* ===== HEADER ===== */
+.hero{
+  background:linear-gradient(180deg,rgba(229,9,20,0.15) 0%,var(--bg) 100%);
+  text-align:center;padding:40px 20px 30px;position:relative;
+}
+.hero h1{font-size:2.2rem;font-weight:700;margin-bottom:6px}
+.hero h1 span{color:var(--accent)}
+.hero p{color:var(--text2);font-size:1rem;font-weight:300}
+/* ===== SEARCH ===== */
+.search-wrap{
+  max-width:600px;margin:20px auto 0;position:relative;
+}
+.search-wrap input{
+  width:100%;padding:14px 20px 14px 50px;border-radius:50px;border:1px solid #2a2a3a;
+  background:var(--card);color:var(--text);font-family:'Kanit';font-size:1rem;
+  outline:none;transition:border .3s;
+}
+.search-wrap input:focus{border-color:var(--accent)}
+.search-wrap .icon{position:absolute;left:18px;top:50%;transform:translateY(-50%);font-size:1.2rem;color:var(--text2)}
+/* ===== GENRES ===== */
+.genre-bar{
+  display:flex;gap:10px;padding:20px;overflow-x:auto;max-width:1400px;margin:0 auto;
+  scrollbar-width:none;-ms-overflow-style:none;
+}
+.genre-bar::-webkit-scrollbar{display:none}
+.genre-btn{
+  flex-shrink:0;padding:8px 20px;border-radius:50px;border:1px solid #2a2a3a;
+  background:transparent;color:var(--text2);font-family:'Kanit';font-size:.9rem;
+  cursor:pointer;transition:all .3s;white-space:nowrap;
+}
+.genre-btn:hover,.genre-btn.active{
+  background:var(--accent);color:#fff;border-color:var(--accent);
+  box-shadow:var(--glow);
+}
+/* ===== MOVIE GRID ===== */
+.section-title{
+  max-width:1400px;margin:30px auto 15px;padding:0 20px;
+  font-size:1.3rem;font-weight:600;
+}
+.section-title span{color:var(--accent)}
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(160px,1fr));
+  gap:18px;max-width:1400px;margin:0 auto;padding:0 20px 30px;
+}
+@media(max-width:600px){
+  .grid{grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:12px}
+}
+/* ===== MOVIE CARD ===== */
+.card{
+  position:relative;border-radius:12px;overflow:hidden;cursor:pointer;
+  transition:transform .3s,box-shadow .3s;background:var(--card);
+}
+.card:hover{transform:translateY(-6px);box-shadow:0 12px 40px rgba(0,0,0,.5)}
+.card img{
+  width:100%;aspect-ratio:2/3;object-fit:cover;display:block;
+  transition:opacity .3s;
+}
+.card .overlay{
+  position:absolute;inset:0;background:linear-gradient(0deg,rgba(0,0,0,.9) 0%,transparent 50%);
+  display:flex;flex-direction:column;justify-content:flex-end;padding:12px;
+  opacity:0;transition:opacity .3s;
+}
+.card:hover .overlay{opacity:1}
+.card .title{font-size:.85rem;font-weight:500;line-height:1.3}
+.card .year{font-size:.75rem;color:var(--text2);margin-top:2px}
+.card .rating{
+  position:absolute;top:8px;left:8px;background:rgba(0,0,0,.7);
+  padding:3px 8px;border-radius:6px;font-size:.75rem;font-weight:600;
+  color:#ffd700;backdrop-filter:blur(4px);
+}
+/* ===== CHECK / SELECTED ===== */
+.card .check{
+  position:absolute;top:8px;right:8px;width:32px;height:32px;
+  border-radius:50%;border:2px solid rgba(255,255,255,.4);
+  background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;
+  font-size:1rem;transition:all .3s;backdrop-filter:blur(4px);z-index:2;
+}
+.card.selected .check{
+  background:var(--accent);border-color:var(--accent);
+  box-shadow:0 0 15px rgba(229,9,20,.6);
+}
+/* ===== WISHLIST PANEL ===== */
+.wishlist-toggle{
+  position:fixed;bottom:20px;right:20px;z-index:100;
+  width:60px;height:60px;border-radius:50%;border:none;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  color:#fff;font-size:1.5rem;cursor:pointer;
+  box-shadow:0 4px 20px rgba(229,9,20,.4);
+  transition:transform .3s;display:flex;align-items:center;justify-content:center;
+}
+.wishlist-toggle:hover{transform:scale(1.1)}
+.wishlist-toggle .badge{
+  position:absolute;top:-4px;right:-4px;background:#fff;color:var(--accent);
+  width:22px;height:22px;border-radius:50%;font-size:.75rem;font-weight:700;
+  display:flex;align-items:center;justify-content:center;
+}
+.wishlist-panel{
+  position:fixed;inset:0;z-index:200;display:none;
+}
+.wishlist-panel.open{display:flex}
+.wishlist-backdrop{
+  position:absolute;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(6px);
+}
+.wishlist-content{
+  position:absolute;right:0;top:0;bottom:0;width:min(420px,90vw);
+  background:var(--card);border-left:1px solid #2a2a3a;
+  overflow-y:auto;padding:30px 20px;
+  animation:slideIn .3s ease;
+}
+@keyframes slideIn{from{transform:translateX(100%)}to{transform:translateX(0)}}
+.wishlist-content h2{font-size:1.3rem;margin-bottom:5px}
+.wishlist-content h2 span{color:var(--accent)}
+.wishlist-content .sub{color:var(--text2);font-size:.85rem;margin-bottom:20px}
+.wish-item{
+  display:flex;gap:12px;padding:12px 0;border-bottom:1px solid #1e1e2e;
+  align-items:center;
+}
+.wish-item img{width:50px;height:75px;object-fit:cover;border-radius:6px;flex-shrink:0}
+.wish-item .info{flex:1}
+.wish-item .info .name{font-size:.9rem;font-weight:500}
+.wish-item .info .meta{font-size:.75rem;color:var(--text2);margin-top:2px}
+.wish-item .remove{
+  width:30px;height:30px;border-radius:50%;border:none;
+  background:rgba(229,9,20,.2);color:var(--accent);font-size:1rem;
+  cursor:pointer;flex-shrink:0;transition:background .3s;
+}
+.wish-item .remove:hover{background:var(--accent);color:#fff}
+.close-panel{
+  position:absolute;top:15px;right:15px;background:none;border:none;
+  color:var(--text2);font-size:1.5rem;cursor:pointer;
+}
+.wishlist-content .share-btn{
+  display:block;width:100%;padding:14px;border:none;border-radius:12px;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  color:#fff;font-family:'Kanit';font-size:1rem;font-weight:600;
+  cursor:pointer;margin-top:20px;transition:opacity .3s;
+}
+.wishlist-content .share-btn:hover{opacity:.85}
+.empty-wish{text-align:center;padding:40px 0;color:var(--text2)}
+/* ===== LOADING ===== */
+.loader{
+  display:flex;justify-content:center;padding:40px;
+}
+.loader .dot{
+  width:12px;height:12px;border-radius:50%;background:var(--accent);
+  margin:0 6px;animation:bounce .6s infinite alternate;
+}
+.loader .dot:nth-child(2){animation-delay:.2s}
+.loader .dot:nth-child(3){animation-delay:.4s}
+@keyframes bounce{to{transform:translateY(-16px);opacity:.3}}
+/* ===== LOAD MORE ===== */
+.load-more{
+  display:block;margin:10px auto 40px;padding:12px 40px;border-radius:50px;
+  border:1px solid #2a2a3a;background:transparent;color:var(--text);
+  font-family:'Kanit';font-size:.95rem;cursor:pointer;transition:all .3s;
+}
+.load-more:hover{border-color:var(--accent);color:var(--accent)}
+/* ===== TOOLTIP ===== */
+.toast{
+  position:fixed;bottom:90px;left:50%;transform:translateX(-50%);
+  background:var(--accent);color:#fff;padding:10px 24px;border-radius:50px;
+  font-size:.9rem;z-index:300;opacity:0;transition:opacity .3s;pointer-events:none;
+}
+.toast.show{opacity:1}
+/* ===== MODAL DETAIL ===== */
+.modal{position:fixed;inset:0;z-index:250;display:none;align-items:center;justify-content:center}
+.modal.open{display:flex}
+.modal-backdrop{position:absolute;inset:0;background:rgba(0,0,0,.8);backdrop-filter:blur(8px)}
+.modal-box{
+  position:relative;background:var(--card);border-radius:16px;
+  max-width:700px;width:90vw;max-height:85vh;overflow-y:auto;
+  animation:fadeUp .3s ease;
+}
+@keyframes fadeUp{from{transform:translateY(30px);opacity:0}to{transform:translateY(0);opacity:1}}
+.modal-poster{width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:16px 16px 0 0}
+.modal-body{padding:24px}
+.modal-body h2{font-size:1.4rem;font-weight:700;margin-bottom:4px}
+.modal-body .modal-meta{color:var(--text2);font-size:.85rem;margin-bottom:12px}
+.modal-body .modal-overview{font-size:.9rem;line-height:1.7;color:#ccc;margin-bottom:16px}
+.modal-body .modal-genres{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.modal-body .modal-genres span{
+  padding:4px 14px;border-radius:50px;background:rgba(229,9,20,.15);
+  color:var(--accent2);font-size:.8rem;
+}
+.modal-body .pick-btn{
+  padding:12px 30px;border:none;border-radius:50px;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  color:#fff;font-family:'Kanit';font-size:1rem;font-weight:600;
+  cursor:pointer;transition:opacity .3s;
+}
+.modal-body .pick-btn:hover{opacity:.85}
+.modal-body .pick-btn.picked{background:#2a2a3a;color:var(--text2)}
+.modal-close{
+  position:absolute;top:12px;right:12px;width:36px;height:36px;
+  border-radius:50%;border:none;background:rgba(0,0,0,.6);color:#fff;
+  font-size:1.2rem;cursor:pointer;backdrop-filter:blur(4px);z-index:2;
+}
+/* scrollbar */
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:#2a2a3a;border-radius:3px}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <h1>🎬 เลือกหนังที่อยากดู<span>ด้วยกัน</span> 💕</h1>
+  <p>ติ๊กเลือกเรื่องที่ชอบ แล้วส่งลิสต์ให้กันได้เลยนะ</p>
+  <div class="search-wrap">
+    <span class="icon">🔍</span>
+    <input type="text" id="searchInput" placeholder="ค้นหาชื่อหนัง...">
+  </div>
+</div>
+
+<div class="genre-bar" id="genreBar"></div>
+
+<div class="section-title" id="sectionTitle">🔥 หนัง<span>ยอดนิยม</span></div>
+<div class="grid" id="movieGrid"></div>
+<div class="loader" id="loader" style="display:none">
+  <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+</div>
+<button class="load-more" id="loadMore" style="display:none" onclick="loadMore()">โหลดเพิ่มเติม</button>
+
+<!-- Wishlist Toggle -->
+<button class="wishlist-toggle" onclick="toggleWishlist()">
+  🎬 <span class="badge" id="wishBadge">0</span>
+</button>
+
+<!-- Wishlist Panel -->
+<div class="wishlist-panel" id="wishPanel">
+  <div class="wishlist-backdrop" onclick="toggleWishlist()"></div>
+  <div class="wishlist-content">
+    <button class="close-panel" onclick="toggleWishlist()">✕</button>
+    <h2>🍿 ลิสต์หนัง<span>ที่อยากดู</span></h2>
+    <p class="sub">ติ๊กเลือกจากหน้าหลัก แล้วกดแชร์ได้เลย!</p>
+    <div id="wishList"></div>
+    <button class="share-btn" id="shareBtn" onclick="shareList()">📋 คัดลอกลิสต์ส่งให้แฟน</button>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- Detail Modal -->
+<div class="modal" id="modal">
+  <div class="modal-backdrop" onclick="closeModal()"></div>
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <img class="modal-poster" id="modalPoster" src="" alt="">
+    <div class="modal-body">
+      <h2 id="modalTitle"></h2>
+      <div class="modal-meta" id="modalMeta"></div>
+      <div class="modal-genres" id="modalGenres"></div>
+      <p class="modal-overview" id="modalOverview"></p>
+      <button class="pick-btn" id="modalPick" onclick="togglePickFromModal()">💕 เลือกเรื่องนี้!</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===== TMDB CONFIG =====
+const API_KEY = '211282884fd211f9a0096fe46ce5cf37';
+const BASE = 'https://api.themoviedb.org/3';
+const IMG = 'https://image.tmdb.org/t/p/w500';
+const IMG_BACK = 'https://image.tmdb.org/t/p/w1280';
+const LANG = 'th-TH';
+
+// Animation genre ID = 16, exclude it
+const EXCLUDE_GENRE = 16;
+
+// Genre map (Thai)
+const GENRES_TH = {
+  28:'แอ็คชัน',12:'ผจญภัย',35:'ตลก',80:'อาชญากรรม',
+  99:'สารคดี',18:'ดราม่า',10751:'ครอบครัว',14:'แฟนตาซี',
+  36:'ประวัติศาสตร์',27:'สยองขวัญ',10402:'เพลง',9648:'ลึกลับ',
+  10749:'โรแมนติก',878:'ไซไฟ',10770:'ทีวีมูฟวี่',53:'ระทึกขวัญ',
+  10752:'สงคราม',37:'คาวบอย'
+};
+
+let wishlist = JSON.parse(localStorage.getItem('movieWish') || '[]');
+let currentPage = 1;
+let currentGenre = null;
+let currentSearch = '';
+let allMovies = [];
+let currentModalMovie = null;
+
+// ===== INIT =====
+document.addEventListener('DOMContentLoaded', () => {
+  renderGenres();
+  fetchMovies();
+  updateBadge();
+});
+
+// ===== GENRES =====
+function renderGenres() {
+  const bar = document.getElementById('genreBar');
+  let html = '<button class="genre-btn active" onclick="selectGenre(null,this)">🔥 ทั้งหมด</button>';
+  for (const [id, name] of Object.entries(GENRES_TH)) {
+    if (parseInt(id) === EXCLUDE_GENRE) continue;
+    html += `<button class="genre-btn" onclick="selectGenre(${id},this)">${name}</button>`;
+  }
+  bar.innerHTML = html;
+}
+
+function selectGenre(id, btn) {
+  document.querySelectorAll('.genre-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  currentGenre = id;
+  currentPage = 1;
+  currentSearch = '';
+  document.getElementById('searchInput').value = '';
+  allMovies = [];
+  document.getElementById('movieGrid').innerHTML = '';
+  const title = id ? GENRES_TH[id] : 'ยอดนิยม';
+  document.getElementById('sectionTitle').innerHTML = `🔥 หนัง<span>${title}</span>`;
+  fetchMovies();
+}
+
+// ===== FETCH =====
+async function fetchMovies() {
+  if (!API_KEY) {
+    document.getElementById('movieGrid').innerHTML = `
+      <div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text2)">
+        <h2 style="margin-bottom:12px">⚠️ ยังไม่ได้ใส่ API Key</h2>
+        <p>ไปสมัคร <a href="https://www.themoviedb.org/settings/api" target="_blank" style="color:var(--accent)">TMDB API Key (ฟรี)</a> แล้วใส่ในไฟล์ index.html บรรทัด <code>const API_KEY = '';</code></p>
+      </div>`;
+    return;
+  }
+  showLoader(true);
+  let url;
+  if (currentSearch) {
+    url = `${BASE}/search/movie?api_key=${API_KEY}&language=${LANG}&query=${encodeURIComponent(currentSearch)}&page=${currentPage}&include_adult=false`;
+  } else if (currentGenre) {
+    url = `${BASE}/discover/movie?api_key=${API_KEY}&language=${LANG}&sort_by=popularity.desc&with_genres=${currentGenre}&without_genres=${EXCLUDE_GENRE}&page=${currentPage}&include_adult=false`;
+  } else {
+    url = `${BASE}/movie/popular?api_key=${API_KEY}&language=${LANG}&page=${currentPage}`;
+  }
+  try {
+    const res = await fetch(url);
+    const data = await res.json();
+    let movies = (data.results || []).filter(m => {
+      if (!m.poster_path) return false;
+      if (m.genre_ids && m.genre_ids.includes(EXCLUDE_GENRE)) return false;
+      return true;
+    });
+    allMovies = allMovies.concat(movies);
+    renderMovies(movies, currentPage === 1);
+    document.getElementById('loadMore').style.display = currentPage < (data.total_pages || 1) ? 'block' : 'none';
+  } catch (e) {
+    console.error(e);
+  }
+  showLoader(false);
+}
+
+function loadMore() {
+  currentPage++;
+  fetchMovies();
+}
+
+// ===== SEARCH =====
+let searchTimer;
+document.getElementById('searchInput').addEventListener('input', e => {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => {
+    const q = e.target.value.trim();
+    if (q.length < 2 && q.length > 0) return;
+    currentSearch = q;
+    currentPage = 1;
+    currentGenre = null;
+    allMovies = [];
+    document.getElementById('movieGrid').innerHTML = '';
+    document.querySelectorAll('.genre-btn').forEach(b => b.classList.remove('active'));
+    if (q) {
+      document.getElementById('sectionTitle').innerHTML = `🔍 ผลค้นหา: <span>"${q}"</span>`;
+    } else {
+      document.querySelectorAll('.genre-btn')[0].classList.add('active');
+      document.getElementById('sectionTitle').innerHTML = '🔥 หนัง<span>ยอดนิยม</span>';
+    }
+    fetchMovies();
+  }, 400);
+});
+
+// ===== RENDER =====
+function renderMovies(movies, clear) {
+  const grid = document.getElementById('movieGrid');
+  if (clear) grid.innerHTML = '';
+  movies.forEach(m => {
+    const sel = wishlist.some(w => w.id === m.id);
+    const card = document.createElement('div');
+    card.className = 'card' + (sel ? ' selected' : '');
+    card.dataset.id = m.id;
+    const title = m.title || m.original_title;
+    const year = (m.release_date || '').slice(0, 4);
+    const rating = m.vote_average ? m.vote_average.toFixed(1) : '-';
+    card.innerHTML = `
+      <div class="check">${sel ? '✓' : ''}</div>
+      <span class="rating">⭐ ${rating}</span>
+      <img src="${IMG}${m.poster_path}" alt="${title}" loading="lazy"
+           onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 200 300%22><rect fill=%22%2316161f%22 width=%22200%22 height=%22300%22/><text fill=%22%238a8a9a%22 x=%22100%22 y=%22150%22 text-anchor=%22middle%22 font-size=%2214%22>No Image</text></svg>'">
+      <div class="overlay">
+        <div class="title">${title}</div>
+        <div class="year">${year}</div>
+      </div>
+    `;
+    card.addEventListener('click', e => {
+      if (e.target.closest('.check')) {
+        togglePick(m, card);
+      } else {
+        openModal(m);
+      }
+    });
+    grid.appendChild(card);
+  });
+}
+
+// ===== PICK =====
+function togglePick(movie, card) {
+  const idx = wishlist.findIndex(w => w.id === movie.id);
+  if (idx > -1) {
+    wishlist.splice(idx, 1);
+    card.classList.remove('selected');
+    card.querySelector('.check').textContent = '';
+    showToast('❌ เอาออกจากลิสต์แล้ว');
+  } else {
+    wishlist.push({
+      id: movie.id,
+      title: movie.title || movie.original_title,
+      poster: movie.poster_path,
+      year: (movie.release_date || '').slice(0, 4),
+      rating: movie.vote_average ? movie.vote_average.toFixed(1) : '-'
+    });
+    card.classList.add('selected');
+    card.querySelector('.check').textContent = '✓';
+    showToast('💕 เพิ่มเข้าลิสต์แล้ว!');
+  }
+  localStorage.setItem('movieWish', JSON.stringify(wishlist));
+  updateBadge();
+}
+
+function togglePickFromModal() {
+  if (!currentModalMovie) return;
+  const m = currentModalMovie;
+  const idx = wishlist.findIndex(w => w.id === m.id);
+  const btn = document.getElementById('modalPick');
+  if (idx > -1) {
+    wishlist.splice(idx, 1);
+    btn.textContent = '💕 เลือกเรื่องนี้!';
+    btn.classList.remove('picked');
+    showToast('❌ เอาออกจากลิสต์แล้ว');
+  } else {
+    wishlist.push({
+      id: m.id,
+      title: m.title || m.original_title,
+      poster: m.poster_path,
+      year: (m.release_date || '').slice(0, 4),
+      rating: m.vote_average ? m.vote_average.toFixed(1) : '-'
+    });
+    btn.textContent = '✅ อยู่ในลิสต์แล้ว';
+    btn.classList.add('picked');
+    showToast('💕 เพิ่มเข้าลิสต์แล้ว!');
+  }
+  localStorage.setItem('movieWish', JSON.stringify(wishlist));
+  updateBadge();
+  // Update card in grid
+  const card = document.querySelector(`.card[data-id="${m.id}"]`);
+  if (card) {
+    const inList = wishlist.some(w => w.id === m.id);
+    card.classList.toggle('selected', inList);
+    card.querySelector('.check').textContent = inList ? '✓' : '';
+  }
+}
+
+// ===== MODAL =====
+async function openModal(movie) {
+  currentModalMovie = movie;
+  const modal = document.getElementById('modal');
+  const backdrop = movie.backdrop_path ? `${IMG_BACK}${movie.backdrop_path}` : `${IMG}${movie.poster_path}`;
+  document.getElementById('modalPoster').src = backdrop;
+  document.getElementById('modalTitle').textContent = movie.title || movie.original_title;
+  const year = (movie.release_date || '').slice(0, 4);
+  const rating = movie.vote_average ? movie.vote_average.toFixed(1) : '-';
+  document.getElementById('modalMeta').textContent = `${year} · ⭐ ${rating} · ${movie.original_language?.toUpperCase() || ''}`;
+  // genres
+  const genresHtml = (movie.genre_ids || [])
+    .filter(g => g !== EXCLUDE_GENRE && GENRES_TH[g])
+    .map(g => `<span>${GENRES_TH[g]}</span>`).join('');
+  document.getElementById('modalGenres').innerHTML = genresHtml;
+  document.getElementById('modalOverview').textContent = movie.overview || 'ไม่มีเรื่องย่อ';
+  // pick btn state
+  const btn = document.getElementById('modalPick');
+  if (wishlist.some(w => w.id === movie.id)) {
+    btn.textContent = '✅ อยู่ในลิสต์แล้ว';
+    btn.classList.add('picked');
+  } else {
+    btn.textContent = '💕 เลือกเรื่องนี้!';
+    btn.classList.remove('picked');
+  }
+  modal.classList.add('open');
+  document.body.style.overflow = 'hidden';
+
+  // Fetch full details for better overview
+  if (API_KEY) {
+    try {
+      const res = await fetch(`${BASE}/movie/${movie.id}?api_key=${API_KEY}&language=${LANG}`);
+      const detail = await res.json();
+      if (detail.overview) {
+        document.getElementById('modalOverview').textContent = detail.overview;
+      }
+      if (detail.genres) {
+        const dg = detail.genres.filter(g => g.id !== EXCLUDE_GENRE).map(g => `<span>${g.name}</span>`).join('');
+        document.getElementById('modalGenres').innerHTML = dg;
+      }
+      if (detail.runtime) {
+        document.getElementById('modalMeta').textContent += ` · ${detail.runtime} นาที`;
+      }
+    } catch(e) {}
+  }
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.remove('open');
+  document.body.style.overflow = '';
+  currentModalMovie = null;
+}
+
+// ===== WISHLIST PANEL =====
+function toggleWishlist() {
+  const panel = document.getElementById('wishPanel');
+  panel.classList.toggle('open');
+  if (panel.classList.contains('open')) renderWishlist();
+}
+
+function renderWishlist() {
+  const list = document.getElementById('wishList');
+  if (wishlist.length === 0) {
+    list.innerHTML = '<div class="empty-wish">🎬 ยังไม่ได้เลือกหนังเลย<br>กดที่ ✓ มุมขวาบนของโปสเตอร์เพื่อเลือก!</div>';
+    return;
+  }
+  list.innerHTML = wishlist.map((m, i) => `
+    <div class="wish-item">
+      <img src="${IMG}${m.poster}" alt="${m.title}">
+      <div class="info">
+        <div class="name">${m.title}</div>
+        <div class="meta">${m.year} · ⭐ ${m.rating}</div>
+      </div>
+      <button class="remove" onclick="removeWish(${i})">✕</button>
+    </div>
+  `).join('');
+}
+
+function removeWish(idx) {
+  const removed = wishlist[idx];
+  wishlist.splice(idx, 1);
+  localStorage.setItem('movieWish', JSON.stringify(wishlist));
+  updateBadge();
+  renderWishlist();
+  // Update grid card
+  const card = document.querySelector(`.card[data-id="${removed.id}"]`);
+  if (card) {
+    card.classList.remove('selected');
+    card.querySelector('.check').textContent = '';
+  }
+  showToast('❌ เอาออกแล้ว');
+}
+
+// ===== SHARE =====
+function shareList() {
+  if (wishlist.length === 0) {
+    showToast('ยังไม่ได้เลือกหนังเลยนะ!');
+    return;
+  }
+  let text = '🎬💕 ลิสต์หนังที่อยากดูด้วยกัน 💕🎬\n\n';
+  wishlist.forEach((m, i) => {
+    text += `${i + 1}. ${m.title} (${m.year}) ⭐${m.rating}\n`;
+  });
+  text += `\nรวม ${wishlist.length} เรื่อง 🍿`;
+  if (navigator.share) {
+    navigator.share({ title: 'ลิสต์หนังที่อยากดู', text });
+  } else {
+    navigator.clipboard.writeText(text).then(() => {
+      showToast('📋 คัดลอกลิสต์แล้ว! ไปวางส่งแฟนได้เลย 💕');
+    });
+  }
+}
+
+// ===== UTILS =====
+function updateBadge() {
+  document.getElementById('wishBadge').textContent = wishlist.length;
+}
+function showLoader(show) {
+  document.getElementById('loader').style.display = show ? 'flex' : 'none';
+}
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2000);
+}
+</script>
+</body>
+</html>
